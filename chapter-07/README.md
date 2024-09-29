@@ -290,3 +290,98 @@ $ kubectl create configmap --save-config web-config \
   - 영구 볼륨 클레임을 사용해야 클러스텅 등록된 볼륨을 파드에서 사용할 수 있음
 
 ---
+
+## 볼륨
+
+- 쿠버네티스에서 제공되는 볼륨 플러그인
+  - emptyDir
+  - hostPath
+  - downwardAPI
+  - projected
+  - nfs
+  - iscsi
+  - cephfs
+
+### emptyDir
+
+- 파드용 임시 디스크 영역
+  - 파드가 종료되면 삭제
+- 호스트 임의 영역을 마운트할 수 없음
+  - 호스트에 있는 파일 참조 불가
+- [예시](./sample-emptydir.yaml)
+- `emptyDir.sizeLimit`으로 리소스 제한도 가능
+  - [예시](./sample-emptydir-limit.yaml)
+- 디스크 영역 이외에 tmpfs 메모리 영역을 사용할 수도 있음
+  - [예시](./sample-emptydir-memory.yaml)
+  - 메모리 영역을 사용할 경우 `resources.limits.memory` 제한에도 영향을 받기 때문에 주의가 필요함
+    - [예시](./sample-emptydir-memory-with-memory-limits.yaml)
+
+### hostPath
+
+- 쿠버네티스 노드상의 영역을 컨테이너상에 매핑
+- [예시](./sample-hostpath.yaml)
+
+### downwardAPI
+
+- 파드 정보 등을 파일로 배치하기 위한 플러그인
+- [예시](./sample-downward-api.yaml)
+
+### projected
+
+- 시크릿, 컨피그맵, downwardAPI, serviceAccountToken의 볼륨 마운트를 하나의 디렉터리에 통합하는 플러그인
+- [예시](./sample-projected.yaml)
+
+## 영구 볼륨(PV)
+
+- 영속성 영역으로 확보된 볼륨
+- 개별 리소스로 생성한 후 사용
+
+### 영구 볼륨 종류
+
+- 네트워크를 통해 디스크를 attach하는 디스크 타입
+- 플러그인 종류
+  - GCE Persistent Disk
+  - AWS Elastic Block Store
+  - Azure File
+  - nfs
+  - iSCSI
+  - Ceph(RBD, CephFS)
+  - OpenStack Cinder
+  - GlusterFS
+  - Container Storage Interface(CSI)
+
+#### Container Storage Interface
+
+- 컨테이너 오케스트레이션 엔진과 스토리지 시스템을 연결하는 인터페이스
+- CSI를 사용하면 쿠버네티스부터 공통화된 CSI 인터페이스를 통해 다양한 프로바이더를 사용할 수 있음
+
+### 영구 볼륨 생성
+
+- 설정 가능한 항목
+  - 레이블
+    - type, environment, speed 등
+    - 영구 볼륨 클레임에서 레이블로 볼륨을 지정할 수 있음
+    - 쉽게 원하는 볼륨을 선택할 수 있도록 설정해 두는 것이 좋음
+  - 용량
+  - 접근 모드
+    - ReadWriteOnce(RWO): 단일 노드에서 Read/Write 가능
+    - ReadOnlyMany(ROX): 여러 노드에서 Read 가능
+      - 파드에서 영구 볼륨 클레임을 지정할 때 `spec.volumes[].persistentVolumeClaim.readOnly`로 지정
+      - [예시](./sample-pv-readonlymany.yaml)
+    - ReadWriteMany(RWX): 여러 노드에서 Read/Write 가능
+      - nfs 등에서 사용 가능
+    - 영구 볼륨에 따라 지원하는 접근 모드가 다름
+  - Reclaim Policy: 영구 볼륨을 사용한 후 처리 방법을 제어하는 정책
+    - `spec.persistentVolumeReclaimPolicy`
+      - Delete: 영구 볼륨 자체를 삭제
+      - Retain: 영구 볼륨 자체를 삭제하지 않고 유지
+        - 또 다른 영구 볼륨 클레임에 의해 이 영구 볼륨이 다시 마운트되지 않음
+      - ~~Recycle: 영구 볼륨의 데이터를 삭제하고 재사용 가능한 상태로 전환~~
+        - ~~다른 영구 볼륨 클레임에 의해 마운트 가능~~
+        - <b>더 이상 사용하지 않기 때문에, 대신 동적 프로비저닝 사용 필요</b>
+  - 마운트 옵션
+    - `spec.mountOptions`
+  - 스토리지클래스
+    - [GKE에서 동적 프로비저닝을 막는 스토리지클래스 예시](./sample-storageclass-manual.yaml)
+  - 각 플러그인 특유의 설정
+- [GCE 영구 디스크용 플러그인을 사용한 예시](./sample-pv.yaml)
