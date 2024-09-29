@@ -331,6 +331,8 @@ $ kubectl create configmap --save-config web-config \
 - 시크릿, 컨피그맵, downwardAPI, serviceAccountToken의 볼륨 마운트를 하나의 디렉터리에 통합하는 플러그인
 - [예시](./sample-projected.yaml)
 
+---
+
 ## 영구 볼륨(PV)
 
 - 영속성 영역으로 확보된 볼륨
@@ -385,3 +387,78 @@ $ kubectl create configmap --save-config web-config \
     - [GKE에서 동적 프로비저닝을 막는 스토리지클래스 예시](./sample-storageclass-manual.yaml)
   - 각 플러그인 특유의 설정
 - [GCE 영구 디스크용 플러그인을 사용한 예시](./sample-pv.yaml)
+
+---
+
+## 영구 볼륨 클레임(PVC)
+
+- 영구 볼륨 클레임에서 지정된 조건을 기반으로 영구 볼륨에 대한 요청이 들어오면 스케줄러는 현재 가지고 있는 영구 볼륨에서 적당한 볼륨을 할당
+
+### 영구 볼륨 클레임 설정
+
+- 설정 항목
+  - 레이블 셀렉터
+  - 용량
+  - 접근 모드
+  - 스토리지클래스
+- [기본 예시](./sample-pvc.yaml)
+  - PVC 생성 시 PV 확보에 실패하면 Pending 상태로 유지
+
+#### 파드에서 사용
+
+- `spec.volumes[].persistentVolumeClaim.claimName`
+  - [예시](./sample-pvc-pod.yaml)
+
+### 동적 프로비저닝
+
+- 영구 볼륨 클레임이 생성되는 타이밍에 동적으로 영구 볼륨을 생성하고 할당
+  - 사전에 미리 영구 볼륨을 생성할 필요가 없어짐
+  - 용량 낭비가 발생하지 않음
+- 동적 프로비저닝을 사용하려면 스토리지클래스 생성이 필요
+  - 설정한 프로비저너로 동적 프로비저닝이 실행
+  - [스토리지클래스 예시](./sample-storageclass.yaml)
+  - [동적 프로비저닝 영구 볼륨 클레임 예시](./sample-pvc-dynamic.yaml)
+  - [동적 프로비저닝된 PVC에 마운트하는 파드 예제](./sample-pvc-dynamic-pod.yaml)
+
+#### 영구 볼륨 할당 타이밍 제어
+
+- 기본적으로 PVC를 생성하면 바로 PV가 생성
+  - 파드에서 실제로 PVC를 attach하지 않아도 PV를 생성하기 때문에 낭비가 발생
+- 스토리지클래스의 `volumeBindingMode`를 통해 이를 제어 가능
+  - `WaitForFirstConsumer` (기본값: `Immediate`)
+  - [예시](./sample-storageclass-wait.yaml)
+
+### 영구 볼륨을 블록 장치로 사용
+
+- PV를 파일 시스템으로 attach하지 않고 블록 장치로 attach하는 것도 가능
+  - `spec.volumeMode: Block` (기본값: `Filesystem`)
+  - [예시](./sample-pvc-block.yaml)
+- 블록 장치로 PVC를 사용할 때에는 `spec.containers[].volumeMounts` 대신 `spec.containers[].volumeDevices` 사용
+  - [예시](./sample-pvc-block-pod.yaml)
+
+### 영구 볼륨 클레임 조정을 사용한 볼륨 확장
+
+- 일부 플러그인에서는 영구 볼륨 클레임 확장(리사이즈)을 지원
+  - 스토리지클래스에 `allowVolumeExpansion: true` 설정 필요
+    - [예시](./sample-storageclass-resize.yaml)
+  - 영구 볼륨 클레임은 별도의 설정이 필요없이 확장 가능한 스토리지클래스를 지정하기만 하면 됨
+    - [예시](./sample-pvc-resize.yaml)
+    - [파드 예시](./sample-pvc-resize-pod.yaml)
+- <b>볼륨 확장은 가능하지만 축소는 불가</b>
+
+### 스테이트풀셋에서 영구 볼륨 클레임(volumeClaimTemplate)
+
+- 스테이트풀셋은 영구 데이터 영역을 사용하는 경우가 많기 때문에 `spec.volumeClaimTemplate`으로 자동으로 영구 볼륨 클레임을 생성 가능
+- [예시](./sample-statefulset-with-pvc.yaml)
+
+## volumeMounts에서 사용 가능한 옵션
+
+### 읽기 전용 마운트
+
+- [예시](./sample-readonly-volumemount.yaml)
+
+### subPath
+
+- 볼륨을 마운트할 때 특정 디렉터리를 루트로 마운트하는 기능
+- [예시](./sample-subpath.yaml)
+- 서로 다른 파드들이 동일한 경로로 마운트하더라도 호스트 레벨에서는 서로 영향을 주지 않도록 하고, 컨테이너 내에서도 동일한 동작을 공유할 수 있게 하기 위함
