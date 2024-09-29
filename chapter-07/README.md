@@ -187,3 +187,88 @@ $ kubectl create secret generic --save-config sample-ssh-auth \
   - `--sync-frequency`로 조정 가능
 
 ---
+
+## ConfigMap
+
+- 설정 정보 등을 키-밸류 값으로 저장할 수 있는 데이터 저장 리소스
+  - 키-밸류 이외에 설정 파일 자체도 저장 가능
+
+### 컨피그맵 생성
+
+- 생성 방법
+  - kubectl로 파일에서 값을 참조하여 생성(`--from-file`) 
+  - kubectl로 직접 값을 전달하여 생성(`--from-literal`)
+  - 매니페스트로 생성(`-f`)
+- 하나의 컨피그맵에 저장 가능한 사이즈는 총 1MB
+
+#### `--from-file`
+
+```shell
+$ kubectl create configmap --save-config sample-configmap --from-file=./nginx.conf
+```
+- `data` 대신 `binaryData`를 사용하면 UTF-8 이외의 데이터를 저장 가능
+  -  base64로 인코드한 값이 등록
+
+#### `--from-literal`
+
+```shell
+$ kubectl create configmap --save-config web-config \
+--from-literal=connection.max=100 --from-literal=connection.min=10
+```
+
+#### `-f`
+
+- 밸류를 여러 행으로 전달할 경우 | 사용
+- 숫자는 큰따옴표
+- [예시](./sample-configmap.yaml)
+
+### 컨피그맵 사용
+
+- 환경 변수로 전달 or 볼륨으로 마운트
+- 특정 키만 or 전체 키 모두
+
+#### 환경 변수로 전달
+
+- 특정 키만 전달
+  - `spec.containers[].env[].valueFrom.configMapKeyRef`
+  - [예시](./sample-configmap-single-env.yaml)
+- 모든 키 전달
+  - `spec.containers[].envFrom[].configMapRef`
+  - [예시](./sample-configmap-multi-env.yaml) 
+
+#### 볼륨으로 마운트
+
+- 특정 키만 마운트
+  - `spec.volumes[].configMap.items[]`
+  - [예시](./sample-configmap-single-volume.yaml)
+- 모든 키 마운트
+  - `spec.volumes[].configMap`
+  - [예시](./sample-configmap-multi-volume.yaml)
+
+### 시크릿, 컨피그맵의 공통 주제
+
+#### 시크릿에서 기밀 정보를 취급하기 위한 구조
+
+- etcd에 저장된 시크릿 데이터는 시크릿을 사용하는 파드가 있을 경우에만 노드에 데이터를 전송
+- 또한, 데이터가 영구적으로 남지 않도록 노드의 tmpfs 영역에 저장
+
+#### 시크릿과 컨피그맵으로 볼륨을 생성하고 마운트할 경우 데이터에 대한 퍼미션 설정 가능
+- 기본값은 `0644`
+- 8진수 표기를 10진수 표기로 변환한 형태를 사용해야 함
+- [예시 1: ConfigMap의 shell script를 실행할 수 있도록 변경](./sample-configmap-scripts.yaml)
+- [예시 2: Secret에 owner readonly로 접근 권한을 변경](./sample-secret-secure.yaml)
+
+#### 동적 컨피그맵 업데이트
+
+- 볼륨 마운트한 시크릿은 kubelet의 sync loop 주기마다 kube-apiserver로 변경을 확인하고 변경이 있을 경우 파일을 교체
+  - 기본 sync loop 주기: 60초
+  - `--sync-frequency`로 조정 가능
+- 환경 변수를 사용한 컨피그맵은 기동할 때 환경 변수가 정해지기 때문에 동적으로 업데이트를 할 수 없음
+  - 컨피그맵을 사용중인 파드 재기동 필요
+
+#### 시크릿, 컨피그맵의 데이터 변경 거부(immutable)
+
+- 데이티 변경을 방지함으로써 예상치 못한 시스템 변경도 방지
+- 데이터를 변경하려면 리소스를 삭제하고 나서 다시 생성해야 함
+  - 볼륨 마운트 중인 경우에는 파드 재생성도 필요
+- [예시](./sample-secret-immutable.yaml)
