@@ -18,3 +18,10 @@
   - CustomResourceDefinition
 
 ---
+
+## 노드
+
+- 사용자가 생성하거나 삭제하는 리소스는 아니지만 쿠버네티스에 리소스로 등록
+- `status.capacity`: 노드가 소유하고 있는 CPU, 메모리의 실제 용량
+- `status.allocatable`: capacity에서 쿠버네티스가 시스템 리소스로 할당하고 있는 만큼을 제외한 실제 파드에 할당 가능한 리소스 용량
+- `kubectl describe node` 또는 `kubectl get nodes -o yaml(or json)`으로 노드에 관한 대부분의 정보를 확인할 수 있음
