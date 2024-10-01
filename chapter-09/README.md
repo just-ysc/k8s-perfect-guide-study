@@ -68,3 +68,16 @@ resources:
 ### 여러 컨테이너 사용 시 리소스 할당
 
 - `max(sum(containers[*]), max(initContainers[*]))`
+
+---
+
+## Cluster Autoscaler와 리소스 부족
+
+- Cluster Autoscaler: 수요에 따라 쿠버네티스 노드를 자동으로 추가하는 기능
+  - Pending 상태의 파드가 생기는 타이밍에 처음으로 동작
+    - 따라서 Requests, Limits를 명확하게 설정해서 배포해야 함
+- 명심해야 할 2가지
+  - Request와 Limits에 너무 큰 차이를 주지 않을 것
+  - Requests를 너무 크게 설정하지 않을 것
+
+---
