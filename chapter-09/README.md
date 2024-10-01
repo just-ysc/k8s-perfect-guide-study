@@ -81,3 +81,38 @@ resources:
   - Requests를 너무 크게 설정하지 않을 것
 
 ---
+
+## LimitRange를 사용한 리소스 제한
+
+- 파드/컨테이너/영구 볼륨 클레임에 대해 CPU나 메모리 리소스의 최솟값과 최댓값, 기본값 등을 설정
+  - default: 기본 Limits
+  - defaultRequest: 기본 Requests
+  - max: 최대 리소스
+  - min: 최소 리소스
+  - maxLimitRequestRatio: Limits/Requests의 비율
+- 신규 파드를 생성할 때 사용되므로 기존 파드에는 영향을 주지 않음
+
+### 기본으로 생성되는 LimitRange
+
+- 일부 환경에서는 사용자가 Request 설정 없이 컨테이너를 지속적으로 배포해 부하가 높아져 장애가 발생하는 것을 막기 위해 LimitRange를 통해 기본 CPU Requests를 설정하기도 함
+
+### 컨테이너에 대한 LimitRange
+
+- `type: Container`
+- [예시](./sample-limitrange-container.yaml)
+
+### 파드에 대한 LimitRange
+
+- `type: Pod`
+- 컨테이너에서 사용하는 리소스 합계로 최대/최소 리소스 제한
+- [예시](./sample-limitrange-pod.yaml)
+
+### 영구 볼륨 클레임에 대한 LimitRange
+
+- `type: PersistentVolumeClaim`
+- [예시](./sample-limitrange-pvc.yaml)
+
+> <strong>LimitRange는 namespace별로 하나만 생성할 수 있는가?</strong>  
+> <strong>여러 개 생성이 가능하다면 충돌 시에는 어떻게 되는가?</strong>
+
+---
