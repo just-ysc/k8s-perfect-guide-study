@@ -25,3 +25,32 @@
 - `status.capacity`: 노드가 소유하고 있는 CPU, 메모리의 실제 용량
 - `status.allocatable`: capacity에서 쿠버네티스가 시스템 리소스로 할당하고 있는 만큼을 제외한 실제 파드에 할당 가능한 리소스 용량
 - `kubectl describe node` 또는 `kubectl get nodes -o yaml(or json)`으로 노드에 관한 대부분의 정보를 확인할 수 있음
+
+---
+
+## 네임스페이스
+
+- 가상의 클러스터 분리 기능
+- 초기 상태의 네임스페이스
+  - default
+  - kube-system
+  - kube-public
+  - kube-node-lease
+
+### 네임스페이스 생성
+
+- kubectl로 생성
+```shell
+$ kubectl create namespace sample-namespace
+```
+- 매니페스트로 생성
+  - [예시](./sample-namespace.yaml)
+
+### 네임스페이스를 지정하여 리소스 획득
+
+- `-n` 또는 `--namespace` 옵션 사용
+```shell
+$ kubectl get pods -n sample-namespace
+$ kubectl get pods --all-namespaces
+$ kubectl get pods -A
+```
