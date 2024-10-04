@@ -167,3 +167,27 @@ resources:
 - [예시](./sample-resourcequota-usable.yaml)
 
 ---
+
+## HorizontalPodAutoscaler
+
+- 디플로이먼트/레플리카셋/레플리케이션 컨트롤러의 레플리카 수를 CPU 부하 등에 따라 자동으로 스케일하는 리소스
+- <b>파드에 Resource Requests가 설정되어 있지 않은 경우에는 동작하지 않음</b>
+- 필요한 레플리카 수 = `ceil(sum(파드의 현재 CPU 사용률) / targetAverageUtilization)`
+- 최대 3분에 1회 스케일 아웃 실행 / 최대 5분에 1회 스케일 인 실행
+- 스케일 아웃 조건식
+  - `avg(파드의 현재 CPU 사용률) / targetAverageUtilization > 1.1`
+- 스케일 인 조건식
+  - `avg(파드의 현재 CPU 사용률) / targetAverageUtilization < 0.9`
+- [예시](./sample-hpa.yaml)
+- CPU 이외의 리소스를 사용하여 오토 스케일링을 하는 경우에는 프로메테우스나 그 외의 메트릭 서버와 연계하기 위한 별도 설정 필요
+  - Resource: CPU/메모리
+  - Object: 쿠버네티스 Object 메트릭(Ingress hit 등)
+  - Pods: 파드 메트릭
+  - External: 외부 메트릭
+
+### HorizontalPodAutoscaler 스케일링 동작 설정
+
+- autoscaling/v2beta2부터 `spec.behavior`로 오토 스케일링 빈도나 증감 가능한 레플리카 수 등을 리소스 단위로 설정 가능
+- [예시](./sample-hpa-behavior.yaml)
+
+---
