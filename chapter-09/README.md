@@ -116,3 +116,32 @@ resources:
 > <strong>여러 개 생성이 가능하다면 충돌 시에는 어떻게 되는가?</strong>
 
 ---
+
+## QoS Class
+
+- 사용자가 직접 설정하지 않고, 파드의 Requests/Limits 설정에 따라 자동으로 설정되는 값
+  - Guaranteed: Requests/Limits가 같고 CPU와 메모리 모두 지정되어 있음
+  - Burstable: Guaranteed를 충족하지 못하고 한 개 이상의 Requests/Limits가 설정되어 있음
+  - BestEffort: Requests/Limits 모두 미지정
+- QoS Class는 OOM Killer의 우선순위인 oom score(-1000 ~ 1000)를 설정할 때 사용
+  - Guaranteed: -998
+  - Burstable: `min(max(2, 1000 - (1000 * 메모리 Request) / 머신 메모리 용량), 999)`
+  - BestEffort: 1000
+- 파드의 `status.qosClass`에서 확인 가능
+
+### BestEffort
+
+- [예시](./sample-qos-besteffort.yaml)
+
+### Guaranteed
+
+- 모든 파드의 QoS Class를 Guaranteed로 한다면 부하 증가에 따른 다른 파드로의 영향(noisy neighbor)을 피할 수 있는 장점
+- 집약률이 낮아지고 리소스 비효율이 발생할 수 있는 단점
+- [예시](./sample-qos-guaranteed.yaml)
+
+### Burstable
+
+- 변동 요소가 크기 때문에 최악의 경우 노드가 과부하를 받을 가능성
+- [예시](./sample-qos-burstable.yaml)
+
+---
