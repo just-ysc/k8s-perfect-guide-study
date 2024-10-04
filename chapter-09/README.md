@@ -145,3 +145,25 @@ resources:
 - [예시](./sample-qos-burstable.yaml)
 
 ---
+
+## 리소스 쿼터를 사용한 네임스페이스 리소스 쿼터 제한
+
+- 각 네임스페이스마다 사용 가능한 리소스 제한 가능
+- 이미 생성된 리소스에는 영향을 주지 않음
+- [예시](./sample-resourcequota.yaml)
+
+### 생성 가능한 리소스 수 제한
+
+- `count/RESROUCE.GROUP`
+- [예시](./sample-resourcequota-count-new.yaml)
+- 쿠버네티스 v1.9 이전의 방식으로는 서비스 type별/PVC storageClass별로 리소스 수를 제한하는 것도 가능
+  - [예시](./sample-resourcequota-count-old.yaml)
+
+### 리소스 사용량 제한
+
+- 컨테이너에 할당 가능한 리소스 양을 제한
+- 스토리지는 Requests만 지정 가능
+- GPU 등의 확장 리소스에 대한 제한도 설정
+- [예시](./sample-resourcequota-usable.yaml)
+
+---
