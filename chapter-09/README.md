@@ -191,3 +191,26 @@ resources:
 - [예시](./sample-hpa-behavior.yaml)
 
 ---
+
+## VerticalPodAutoscaler
+
+- 컨테이너에 할당하는 CPU/메모리 리소스의 할당을 자동으로 스케일 업 / 스케일 다운해주는 기능
+- [VPA 대상 디플로이먼트 예시](./sample-vpa-deployment.yaml)
+- [VPA 예시](./sample-vpa.yaml)
+  - 업데이트 mode
+    - Off: Requests 추천값을 계산만 하고 실제 변경은 없음
+    - Initial: 파드가 재생성된 시점에만 추천값을 Requests로 변경
+    - Recreate: 추천값이 변경될 때 파드가 재생성되고 Requests를 변경
+    - InPlace: 추천값이 변경될 때 파드를 기동한 상태로 Requests를 변경
+    - Auto: 추천값이 변경될 때 InPlace 또는 Recreate로 Requests를 변경
+  - 추천값 파라미터
+    - Lower Bound: 최소 추천값, 이 양을 밑도는 경우 성능에 큰 영향
+    - Upper Bound: 최대 추천값, 이 양을 초과하는 경우 리소스 낭비
+    - Target: 추천값
+    - Uncapped Target: minAllowed, maxAllowed를 고려하지 않은 추천값
+- <b>VPA는 이 책의 집필 시점에는 쿠버네티스 자체에 포함되어 있지 않아 VPA용 구성 요소 등을 설치해야 함</b>
+  - GKE는 애드온으로 제공
+
+> <b>현재 VPA는 계속 개발되고 사용되고 있는가?</b>
+
+---

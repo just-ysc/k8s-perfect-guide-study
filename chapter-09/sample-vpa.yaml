@@ -1,0 +1,22 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: sample-vpa
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sample-vpa-deployment
+  updatePolicy:
+    updateMode: Auto # Requests 업데이트 시 파드를 재생성함
+  resourcePolicy:
+    containerPolicies:
+      - containerName: no-vpa-container
+        mode: "Off" # VPA 대상 제외
+      - containerName: "*"
+        mode: Auto
+        minAllowed:
+          memory: 300Mi
+        maxAllowed:
+          memory: 1000Mi
+        controllerResources: ["cpu", "memory"]
