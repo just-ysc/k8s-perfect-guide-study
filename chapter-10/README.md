@@ -150,3 +150,16 @@ $ kubectl exec -it sample-readiness -- rm -f /usr/share/nginx/html/50x.html
 
 ---
 
+## 파드의 안전한 정지와 타이밍
+
+- [예시](./sample-termination.yaml)
+  - 파드 삭제 요청이 쿠버네티스 API 서버에 도착하면 아래 2가지 작업이 비동기로 실행
+    - preStop + SIGTERM
+    - 서비스 엔드포인트에서 제외
+  - 따라서 일부 요청에서 에러가 발생할 수 있음
+  - `spec.terminationGracePeriodSeconds`
+    - 이 시간 내에 preStop + SIGTERM이 끝나지 않으면 SIGKILL 처리
+    - 기본값 30초
+    - preStop만으로도 terminationGracePeriodSeconds를 넘길 경우에는 SIGTERM 처리를 위한 2초 추가 제공
+
+---
