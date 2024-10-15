@@ -135,3 +135,18 @@ $ kubectl exec -it sample-readiness -- rm -f /usr/share/nginx/html/50x.html
 
 ---
 
+## `postStart` / `preStop`
+
+- `postStart`: 컨테이너 기동 후 임의의 명령어 실행
+  - `spec.containers[].command`와 거의 같은 타이밍에 비동기로 실행
+- `preStop`: 컨테이너 정지 전 임의의 명령어 실행
+- [예시](./sample-lifecycle-exec.yaml)
+- `exec`외에 `httpGet`도 사용 가능
+  - [예시](./sample-lifecycle-httpget.yaml)
+- `postStart`, `preStop`은 <b>최소 한 번</b> 실행
+  - 두 번 이상 실행될 수 있음
+- `postStart`는 타임아웃 설정이 불가
+  - 실행 중에는 Probe도 실행되지 않기 때문에 오래 걸리는 명령을 실행할 경우 주의
+
+---
+
