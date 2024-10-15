@@ -102,3 +102,24 @@ $ kubectl exec -it sample-readiness -- rm -f /usr/share/nginx/html/50x.html
 
 ---
 
+## 컨테이너 라이프사이클과 재기동
+
+- 컨테이너 재기동 정책은 `spec.restartPolicy`로 지정
+  - Always: 항상 파드를 재기동
+  - OnFailure: 0이 아닌 종료 코드로 파드가 정지한 경우 재기동
+  - Never: 재기동하지 않음
+
+### `Always`
+
+- [예시](./sample-restart-always.yaml)
+
+### `OnFailure`
+
+- [예시](./sample-restart-onfailure.yaml)
+
+### `Never`
+
+- [예시](./sample-restart-never.yaml)
+
+---
+
