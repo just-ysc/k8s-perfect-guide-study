@@ -123,3 +123,15 @@ $ kubectl exec -it sample-readiness -- rm -f /usr/share/nginx/html/50x.html
 
 ---
 
+## 초기화 컨테이너
+
+- 파드 내부에서 메인 컨테이너를 기동하기 전에 별도로 기동하는 컨테이너
+  - 저장소에서 파일 로드
+  - 컨테이너 기동 지연
+  - 설정 파일 동적 생성
+- `spec.initContainers[]`
+  - 위에서부터 순차적으로 기동
+- [예시](./sample-initcontainer.yaml)
+
+---
+

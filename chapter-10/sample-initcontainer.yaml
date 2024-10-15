@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sample-initcontainer
+spec:
+  initContainers:
+    - name: output-1
+      image: amsy810/tools:v2.0
+      command: ["sh", "-c", "sleep 20; echo 1st > /usr/share/nginx/html/index.html"]
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html/
+          name: html-volume
+    - name: output-2
+      image: amsy810/tools:v2.0
+      command: [ "sh", "-c", "sleep 10; echo 2nd > /usr/share/nginx/html/index.html" ]
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html/
+          name: html-volume
+  containers:
+    - name: nginx-container
+      image: nginx:1.16
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html/
+          name: html-volume
+  volumes:
+    - name: html-volume
+      emptyDir: {}
