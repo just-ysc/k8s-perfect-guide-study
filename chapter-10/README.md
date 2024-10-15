@@ -163,3 +163,31 @@ $ kubectl exec -it sample-readiness -- rm -f /usr/share/nginx/html/50x.html
     - preStop만으로도 terminationGracePeriodSeconds를 넘길 경우에는 SIGTERM 처리를 위한 2초 추가 제공
 
 ---
+
+## 리소스를 삭제했을 때의 동작
+
+- 레플리카셋 등의 상위 리소스가 삭제되면 하위 리소스가 되는 파드 등을 삭제하기 위해 Garbage Collection 수행
+  - 파드에는 레플리카셋의, 레플리카셋에는 디플로이먼트의 정보를 `metadata.ownerReferences`에 저장
+- 레플리카셋 삭제 시 동작
+  - `Background`(기본값)
+    - 레플리카셋을 즉시 삭제하고 파드는 가비지 수집기가 백그라운드에서 비동기로 삭제
+  - `Foreground`
+    - 레플리카셋을 즉시 삭제하지 않고 `deletionTimestamp`를 설정하고 `metadata.finalizers`를 `foregroundDeletion`으로 설정
+    - 가비지 수집기가 각 파드에서 `blockOwnerDeletion = true`인 것을 삭제
+      - `false`일 경우에는 `Background`로 삭제
+    - 모든 삭제가 끝나면 레플리카셋을 삭제
+    - kubectl로는 선택할 수 없으며 사용하려면 API 조작 필요
+  - `Orphan`
+    - 레플리카셋 삭제 시 파드 삭제를 하지 않음
+
+```shell
+# Background 삭제
+$ kubectl delete replicaset sample-rs
+# or
+$ kubectl delete --cascade=true replicaset sample-rs
+
+# Orphan 삭제
+$ kubectl delete --cascade=false replicaset sample-rs
+```
+
+---
